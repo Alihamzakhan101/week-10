@@ -1,0 +1,92 @@
+{
+  "nbformat": 4,
+  "nbformat_minor": 0,
+  "metadata": {
+    "colab": {
+      "provenance": [],
+      "authorship_tag": "ABX9TyMeNeboW0tG2fmvsguRc5oU",
+      "include_colab_link": true
+    },
+    "kernelspec": {
+      "name": "python3",
+      "display_name": "Python 3"
+    },
+    "language_info": {
+      "name": "python"
+    }
+  },
+  "cells": [
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "view-in-github",
+        "colab_type": "text"
+      },
+      "source": [
+        "<a href=\"https://colab.research.google.com/github/Alihamzakhan101/week-10/blob/main/Weekly%20challenge\" target=\"_parent\"><img src=\"https://colab.research.google.com/assets/colab-badge.svg\" alt=\"Open In Colab\"/></a>"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": 2,
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "GY8Dw-1RQGKz",
+        "outputId": "a9e6b051-fc71-440b-c809-0f605afc29e0"
+      },
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "Enter movie keyword (e.g., action, comedy, thriller): thriller\n",
+            "Scraping complete! Data saved in imdb_thriller.csv\n"
+          ]
+        }
+      ],
+      "source": [
+        "import csv\n",
+        "import requests\n",
+        "from bs4 import BeautifulSoup\n",
+        "\n",
+        "# User input for search keyword\n",
+        "search_query = input(\"Enter movie keyword (e.g., action, comedy, thriller): \").strip().replace(\" \", \"+\")\n",
+        "url = f\"https://www.imdb.com/search/title/?genres={search_query}\"\n",
+        "\n",
+        "headers = {'User-Agent': 'Mozilla/5.0'}\n",
+        "response = requests.get(url, headers=headers)\n",
+        "\n",
+        "if response.status_code == 200:\n",
+        "    soup = BeautifulSoup(response.text, 'html.parser')\n",
+        "\n",
+        "    movies = []\n",
+        "\n",
+        "    # Find movie containers\n",
+        "    for movie in soup.find_all('div', class_='lister-item-content'):\n",
+        "        title_tag = movie.find('a')\n",
+        "        rating_tag = movie.find('strong')\n",
+        "        genre_tag = movie.find('span', class_='genre')\n",
+        "\n",
+        "        if title_tag and rating_tag and genre_tag:\n",
+        "            title = title_tag.get_text(strip=True)\n",
+        "            rating = rating_tag.get_text(strip=True)\n",
+        "            genre = genre_tag.get_text(strip=True)\n",
+        "            movies.append([title, rating, genre])\n",
+        "\n",
+        "    # Save data to CSV\n",
+        "    csv_filename = f'imdb_{search_query}.csv'\n",
+        "    with open(csv_filename, mode='w', newline='', encoding='utf-8') as file:\n",
+        "        writer = csv.writer(file)\n",
+        "        writer.writerow([\"Movie Title\", \"IMDb Rating\", \"Genre\"])\n",
+        "        writer.writerows(movies)\n",
+        "\n",
+        "    print(f\"Scraping complete! Data saved in {csv_filename}\")\n",
+        "else:\n",
+        "    print(\"Failed to fetch data. IMDb may have blocked the request.\")\n",
+        "\n"
+      ]
+    }
+  ]
+}
